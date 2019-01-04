@@ -10,11 +10,11 @@ module MetadataJsonDeps
     end
 
     def module_dependencies
-      return [] unless @metadata['dependencies']
+      return [] unless @metadata[:dependencies]
 
-      @metadata['dependencies'].map do |dep|
-        constraint = dep['version_requirement'] || '>= 0'
-        [dep['name'], SemanticPuppet::VersionRange.parse(constraint)]
+      @metadata[:dependencies].map do |dep|
+        constraint = dep[:version_requirement] || '>= 0'
+        [dep[:name], SemanticPuppet::VersionRange.parse(constraint)]
       end
     end
 
