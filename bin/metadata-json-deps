@@ -10,4 +10,4 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-MetadataJsonDeps::Runner.run(ARGV, options[:verbose])
+MetadataJsonDeps::Runner.run(ARGV[0..-3], ARGV[-2], ARGV[-1], options[:verbose])

@@ -2,9 +2,11 @@ require 'semantic_puppet'
 
 module MetadataJsonDeps
   class MetadataChecker
-    def initialize(metadata, forge)
+    def initialize(metadata, forge, updated_module, updated_module_version)
       @metadata = metadata
       @forge = forge
+      @updated_module = updated_module
+      @updated_module_version = updated_module_version
     end
 
     def module_dependencies
@@ -18,7 +20,7 @@ module MetadataJsonDeps
 
     def dependencies
       module_dependencies.map do |dependency, constraint|
-        current = @forge.get_current_version(dependency)
+        current = dependency == @updated_module ? SemanticPuppet::Version.parse(@updated_module_version) : @forge.get_current_version(dependency)
         [dependency, constraint, current, constraint.include?(current)]
       end
     end
