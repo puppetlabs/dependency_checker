@@ -10,7 +10,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md']
   s.homepage    = 'https://github.com/ekohl/metadata_json_deps'
   s.metadata    = { 'source_code_uri' => 'https://github.com/ekohl/metadata_json_deps' }
-  s.executables << 'metadata-json-deps'
 
   s.required_ruby_version = Gem::Requirement.new('>= 2.0.0')
 
