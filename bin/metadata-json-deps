@@ -8,6 +8,9 @@ OptionParser.new do |opts|
   opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
     options[:verbose] = v
   end
+  opts.on("-s", "--slack", "Post output to Slack") do |v|
+    options[:use_slack] = v
+  end
 end.parse!
 
-MetadataJsonDeps::Runner.run(ARGV[0], ARGV[1], ARGV[2], options[:verbose])
+MetadataJsonDeps::Runner.run(ARGV[0], ARGV[1], ARGV[2], options[:verbose], options[:use_slack])
