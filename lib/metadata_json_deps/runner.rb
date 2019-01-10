@@ -75,8 +75,10 @@ module MetadataJsonDeps
       raise 'Encountered issue posting to Slack' unless response.code == '200'
     end
 
-    def self.run(filename, module_name, new_version, verbose = false, use_slack = false)
-      self.new(filename, module_name, new_version, verbose, use_slack).run
+    def self.run(filename, module_name, new_version, verbose = 'false', use_slack = 'false')
+      
+      
+      self.new(filename, module_name, new_version, verbose == 'true', use_slack == 'true').run
     end
   end
 end
