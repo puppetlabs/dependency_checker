@@ -1,49 +1,31 @@
 # metadata-json-deps
 
-The metadata-json-deps tool validates dependencies in `metadata.json` files in Puppet modules against the latest published versions on the [Puppet Forge](https://forge.puppet.com/).
+The metadata-json-deps tool validates dependencies in `metadata.json` files in Puppet modules against a specified Puppet module and version.
 
 ## Compatibility
 
 metadata-json-deps is compatible with Ruby versions 2.0.0 and newer.
 
-## Installation
+## Usage
 
-via `gem` command:
-``` shell
-gem install metadata_json_deps
+Install the gem by supplying it in your Gemfile:
+
 ```
-
-via Gemfile:
-``` ruby
+source 'https://rubygems.org'
 gem 'metadata_json_deps'
 ```
 
-## Usage
+The following rake task is available:
+- `rake compare_dependencies[managed_modules,module,version,verbose,use_slack]` Compare specfified module and version against dependencies of other modules 
+  - `managed_modules` Path to YAML file containing an array of modules to compare to
+  - `module` Name of module on Puppet Forge using the syntax owner/name e.g. puppetlabs/stdlib
+  - `version` Semantic version to compare against e.g. 5.0.1
+  - `verbose` Boolean stating whether to display matches as well as non-matches. Defaults to false.
+  - `use_slack` Boolean stating whether to post output to Slack. See below for more details. Defaults to false.
 
-### Testing with metadata-json-deps
+### Posting output to Slack
+By passing true to the `use_slack` argument of the `compare_dependencies` rake task, you can have the output of the comparison sent to a Slack channel. To do this see [here](https://api.slack.com/tutorials/slack-apps-hello-world) on setting up a webhook on your Slack workspace, then supply the webhook to metadata-json-deps by specifying an environment variable called `METADATA_JSON_DEPS_SLACK_WEBHOOK` containing the webhook generated from Slack.
 
-On the command line, run `metadata-json-deps` with the path(s) of your `metadata.json` file(s):
 
-```shell
-metadata-json-deps /path/to/metadata.json
-```
 
-It can also be run verbosely to show valid dependencies:
 
-```shell
-metadata-json-deps -v modules/*/metadata.json
-```
-
-### Testing with metadata-json-deps as a Rake task
-
-You can also integrate `metadata-json-deps` checks into your tests using a Rake task:
-
-```ruby
-require 'metadata_json_deps'
-
-desc 'Run metadata-json-deps'
-task :metadata_deps do
-  files = FileList['modules/*/metadata.json']
-  MetadataJsonDeps::Runner.run(files)
-end
-```
