@@ -33,7 +33,7 @@ module MetadataJsonDeps
     end
 
     def get_metadata_json_uri(module_name)
-      uri = URI.parse(ENV['METADATA_JSON_URI_BASE'] + module_name)
+      uri = URI.parse('https://forgeapi.puppetlabs.com/v3/modules/' + module_name)
       request = Net::HTTP::Get.new(uri.to_s)
       request.content_type = 'application/json'
       req_options = {
