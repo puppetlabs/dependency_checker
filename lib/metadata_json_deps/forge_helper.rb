@@ -18,21 +18,7 @@ module MetadataJsonDeps
       version
     end
 
-    def get_metadata_json(name)
-      name = name.sub('/', '-')
-      version = @cache[name]
-      metadata = @cache["#{name}-metadata"]
-
-      version = get_current_version(name) unless version
-
-      unless metadata
-        @cache["#{name}-metadata"] = metadata = get_metadata("#{name}-#{version}")
-      end
-
-      metadata
-    end
-
-    def get_metadata_json_uri(module_name)
+    def get_module_data(module_name)
       uri = URI.parse('https://forgeapi.puppetlabs.com/v3/modules/' + module_name)
       request = Net::HTTP::Get.new(uri.to_s)
       request.content_type = 'application/json'
@@ -44,16 +30,7 @@ module MetadataJsonDeps
         http.request(request)
       end
 
-      response.body
-    end
-
-    def check_deprecated_at(module_name)
-      module_name = module_name.sub('/', '-')
-      meta_complete = get_metadata_json_uri(module_name)
-      details = JSON.parse(meta_complete)
-      if details.has_key? 'deprecated_at'
-        details['deprecated_at'] != nil
-      end
+      JSON.parse(response.body)
     end
 
     private
