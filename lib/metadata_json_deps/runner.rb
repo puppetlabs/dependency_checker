@@ -21,9 +21,6 @@ module MetadataJsonDeps
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
       if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
         message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
-        puts message
-        post_to_slack(message) if @use_slack
-        post_to_logs(message) if @logs_file
         exit
       end
       @updated_module = @updated_module.sub('-', '/')
