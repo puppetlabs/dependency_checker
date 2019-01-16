@@ -18,18 +18,19 @@ module MetadataJsonDeps
       version
     end
 
-    def get_metadata_json(name)
-      name = name.sub('/', '-')
-      version = @cache[name]
-      metadata = @cache["#{name}-metadata"]
+    def get_module_data(module_name)
+      uri = URI.parse('https://forgeapi.puppetlabs.com/v3/modules/' + module_name)
+      request = Net::HTTP::Get.new(uri.to_s)
+      request.content_type = 'application/json'
+      req_options = {
+          use_ssl: uri.scheme == 'https',
+      }
 
-      version = get_current_version(name) unless version
-
-      unless metadata
-        @cache["#{name}-metadata"] = metadata = get_metadata("#{name}-#{version}")
+      response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
+        http.request(request)
       end
 
-      metadata
+      JSON.parse(response.body)
     end
 
     private

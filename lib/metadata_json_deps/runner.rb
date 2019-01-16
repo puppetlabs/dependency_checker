@@ -17,14 +17,21 @@ module MetadataJsonDeps
     end
 
     def run
-
-      @updated_module = @updated_module.sub('-', '/')
+      @updated_module = @updated_module.sub('/', '-')
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
+      if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
+        message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
+        exit
+      end
+      @updated_module = @updated_module.sub('-', '/')
       @module_names.each do |module_name|
         message += "Checking *#{module_name}*\n"
-        metadata = @forge.get_metadata_json(module_name)
+        module_name = module_name.sub('/', '-')
+        module_data = @forge.get_module_data(module_name)
+        metadata = module_data['current_release']['metadata']
         checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
         dependencies = checker.dependencies
+        message += "The checked module #{module_name.upcase} is DEPRECATED.\n" if check_deprecated(@forge.get_current_version(module_name), module_data)
 
         if dependencies.empty?
           message += "\tNo dependencies listed\n\n"
@@ -32,6 +39,7 @@ module MetadataJsonDeps
         end
 
         allMatch = true
+        not_deprecated = true
         dependencies.each do |dependency, constraint, current, satisfied|
           if satisfied
             if @verbose
@@ -41,9 +49,13 @@ module MetadataJsonDeps
             allMatch = false
             message += "\t#{dependency} (#{constraint}) *doesn't match* #{current}\n"
           end
+          dependency = dependency.sub('/', '-')
+          not_deprecated = false if check_deprecated(current, @forge.get_module_data(dependency))
+
+          message += "\tThe dependency module #{dependency.upcase} is DEPRECATED.\n" if check_deprecated(current, @forge.get_module_data(dependency))
         end
 
-        message += "\tAll dependencies match\n" if allMatch
+        message += "\tAll dependencies match\n" if allMatch && not_deprecated
         message += "\n"
       end
 
@@ -51,6 +63,10 @@ module MetadataJsonDeps
       post_to_slack(message) if @use_slack
       post_to_logs(message) if @logs_file
     rescue Interrupt
+    end
+
+    def check_deprecated(version, module_data)
+      version.to_s.eql?('999.999.999') || version.to_s.eql?('99.99.99') || module_data['deprecated_at'] != nil
     end
 
     def return_modules(filename)
