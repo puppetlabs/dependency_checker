@@ -25,7 +25,7 @@ module MetadataJsonDeps
         puts message
         post_to_slack(message) if @use_slack
         post_to_logs(message) if @logs_file
-        exit
+        raise message
       end
 
       @updated_module = @updated_module.sub('/', '-')
@@ -35,7 +35,7 @@ module MetadataJsonDeps
         puts message
         post_to_slack(message) if @use_slack
         post_to_logs(message) if @logs_file
-        exit
+        puts message
       end
       @updated_module = @updated_module.sub('-', '/')
       @module_names.each do |module_name|
