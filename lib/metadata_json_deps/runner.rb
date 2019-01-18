@@ -17,20 +17,43 @@ module MetadataJsonDeps
     end
 
     def run
+      begin
+        @forge.get_mod(@updated_module.sub('/', '-'))
+        SemanticPuppet::Version.parse(@updated_module_version)
+      rescue StandardError => error
+        message = "Error: Verify *#{@updated_module}* exists on Puppet Forge! Verify semantic versioning syntax *#{@updated_module_version}*. \n"
+        puts message
+        post_to_slack(message) if @use_slack
+        post_to_logs(message) if @logs_file
+        exit
+      end
+
       @updated_module = @updated_module.sub('/', '-')
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
       if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
         message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
+        puts message
+        post_to_slack(message) if @use_slack
+        post_to_logs(message) if @logs_file
         exit
       end
       @updated_module = @updated_module.sub('-', '/')
       @module_names.each do |module_name|
-        message += "Checking *#{module_name}*\n"
+        message += "Checking *#{module_name}*.\n"
         module_name = module_name.sub('/', '-')
+
+        begin
+          @forge.get_mod(module_name)
+        rescue StandardError => error
+          message += "Checked module name *#{module_name.sub('-', '/')}* could not be found. Verify *#{module_name.sub('-', '/')}* exists on Puppet Forge. \n\n"
+          next
+        end
+
         module_data = @forge.get_module_data(module_name)
         metadata = module_data['current_release']['metadata']
         checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
         dependencies = checker.dependencies
+
         message += "The checked module #{module_name.upcase} is DEPRECATED.\n" if check_deprecated(@forge.get_current_version(module_name), module_data)
 
         if dependencies.empty?

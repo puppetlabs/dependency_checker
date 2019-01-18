@@ -33,11 +33,11 @@ module MetadataJsonDeps
       JSON.parse(response.body)
     end
 
-    private
-
     def get_mod(name)
       PuppetForge::Module.find(name)
     end
+
+    private
 
     def get_version(mod)
       SemanticPuppet::Version.parse(mod.current_release.version)

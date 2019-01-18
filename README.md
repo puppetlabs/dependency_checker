@@ -28,11 +28,13 @@ The same logs are sent to logs file and to Slack if the arguments are added. Log
 e.g.
 - The module you are comparing against module_name is DEPRECATED.
 - The checked module module_name is DEPRECATED.
-- The dependency module module_name is DEPRECATED.
-- Comparing modules against *puppetlabs/stdlib* version *10.0.0*
-  Checking *puppetlabs/websphere_application_server*
-        puppetlabs/concat (>= 1.1.0 < 5.0.0) *doesn't match* 5.2.0
-        puppetlabs/ibm_installation_manager (>= 0.2.4 < 1.0.0) *matches* 0.6.0
+- The dependency module dependency_module_name is DEPRECATED.
+- Checked module name module_name could not be found. Verify module_name exists on Puppet Forge.
+- Error: Verify module_name exists on Puppet Forge! Verify semantic versioning syntax module_version.  
+- Comparing modules against module_name version module_version
+  Checking module_name
+        dependency_module_name (>= 1.1.0 < 5.0.0) *doesn't match* 5.2.0
+        dependency_module_name (>= 0.2.4 < 1.0.0) *matches* 0.6.0
 
   
 ### Posting output to Slack
