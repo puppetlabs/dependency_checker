@@ -32,9 +32,6 @@ module MetadataJsonDeps
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
       if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
         message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
-        puts message
-        post_to_slack(message) if @use_slack
-        post_to_logs(message) if @logs_file
       end
       @updated_module = @updated_module.sub('-', '/')
       @module_names.each do |module_name|
@@ -125,8 +122,6 @@ module MetadataJsonDeps
     end
 
     def self.run(filename, module_name, new_version, verbose = 'false', use_slack = 'false', logs_file)
-      
-      
       self.new(filename, module_name, new_version, verbose == 'true', use_slack == 'true', logs_file).run
     end
   end
