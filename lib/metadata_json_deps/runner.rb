@@ -25,17 +25,14 @@ module MetadataJsonDeps
         puts message
         post_to_slack(message) if @use_slack
         post_to_logs(message) if @logs_file
-        exit
+        raise message
       end
 
       @updated_module = @updated_module.sub('/', '-')
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
       if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
         message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
-        puts message
-        post_to_slack(message) if @use_slack
-        post_to_logs(message) if @logs_file
-        exit
+
       end
       @updated_module = @updated_module.sub('-', '/')
       @module_names.each do |module_name|
@@ -52,7 +49,7 @@ module MetadataJsonDeps
         module_data = @forge.get_module_data(module_name)
         metadata = module_data['current_release']['metadata']
         checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
-        dependencies = checker.dependencies
+        dependencies = checker.check_dependencies
 
         message += "The checked module #{module_name.upcase} is DEPRECATED.\n" if check_deprecated(@forge.get_current_version(module_name), module_data)
 
@@ -126,8 +123,6 @@ module MetadataJsonDeps
     end
 
     def self.run(filename, module_name, new_version, verbose = 'false', use_slack = 'false', logs_file)
-      
-      
       self.new(filename, module_name, new_version, verbose == 'true', use_slack == 'true', logs_file).run
     end
   end

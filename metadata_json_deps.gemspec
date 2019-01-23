@@ -16,4 +16,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'puppet_forge', '~> 2.2'
   s.add_runtime_dependency 'semantic_puppet', '~> 1.0'
   s.add_runtime_dependency 'rake', '~> 12.3'
+  s.add_development_dependency 'rspec'
 end

@@ -42,9 +42,5 @@ module MetadataJsonDeps
     def get_version(mod)
       SemanticPuppet::Version.parse(mod.current_release.version)
     end
-
-    def get_metadata(name)
-      PuppetForge::Release.find(name).metadata
-    end
   end
 end
