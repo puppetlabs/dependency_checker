@@ -1,0 +1,5 @@
+- puppetlabs/puppet_conf
+- puppetlabs/inifile
+- puppetlabs/tomcat
+- puppetlabs/test
+- puppetlabs/docker_platform
