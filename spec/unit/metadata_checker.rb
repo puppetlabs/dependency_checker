@@ -11,25 +11,25 @@ describe 'metadata_checker' do
     @checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
   end
 
-  context 'module_dependencies method' do
-    it 'returns correct dependencies' do
-      expect(@checker.module_dependencies).to eq(
+  context 'check_dependencies method' do
+    it 'returns correct results' do
+      expect(@checker.check_dependencies).to eq(
         [
-            ["puppetlabs/registry", SemanticPuppet::VersionRange.parse('>=1.0.0 <3.0.0')],
-            ["puppetlabs/stdlib", SemanticPuppet::VersionRange.parse('>=2.1.0 <6.0.0')],
-            ["puppetlabs/translate", SemanticPuppet::VersionRange.parse('>=1.0.0 <2.0.0')],
+          ["puppetlabs/registry", SemanticPuppet::VersionRange.parse('>=1.0.0 <3.0.0'),  SemanticPuppet::Version.parse('2.1.0'), true],
+          ["puppetlabs/stdlib", SemanticPuppet::VersionRange.parse('>=2.1.0 <6.0.0'), SemanticPuppet::Version.parse('5.2.0'), true],
+          ["puppetlabs/translate", SemanticPuppet::VersionRange.parse('>=1.0.0 <2.0.0'), SemanticPuppet::Version.parse('1.2.0'), true],
         ]
       )
     end
   end
 
-  context 'dependencies method' do
+  context 'module_dependencies method' do
     it 'returns correct dependencies' do
-      expect(@checker.dependencies).to eq(
+      expect(@checker.send(:get_module_dependencies)).to eq(
         [
-          ["puppetlabs/registry", SemanticPuppet::VersionRange.parse('>=1.0.0 <3.0.0'),  SemanticPuppet::Version.parse('2.1.0'), true],
-          ["puppetlabs/stdlib", SemanticPuppet::VersionRange.parse('>=2.1.0 <6.0.0'), SemanticPuppet::Version.parse('5.2.0'), true],
-          ["puppetlabs/translate", SemanticPuppet::VersionRange.parse('>=1.0.0 <2.0.0'), SemanticPuppet::Version.parse('1.2.0'), true],
+            ["puppetlabs/registry", SemanticPuppet::VersionRange.parse('>=1.0.0 <3.0.0')],
+            ["puppetlabs/stdlib", SemanticPuppet::VersionRange.parse('>=2.1.0 <6.0.0')],
+            ["puppetlabs/translate", SemanticPuppet::VersionRange.parse('>=1.0.0 <2.0.0')],
         ]
       )
     end

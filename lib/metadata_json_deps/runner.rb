@@ -49,7 +49,7 @@ module MetadataJsonDeps
         module_data = @forge.get_module_data(module_name)
         metadata = module_data['current_release']['metadata']
         checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
-        dependencies = checker.dependencies
+        dependencies = checker.check_dependencies
 
         message += "The checked module #{module_name.upcase} is DEPRECATED.\n" if check_deprecated(@forge.get_current_version(module_name), module_data)
 

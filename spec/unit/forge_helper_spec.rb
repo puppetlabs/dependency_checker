@@ -41,4 +41,10 @@ describe 'forge_helper' do
       expect{ @forge_helper.get_mod('puppetlabs-waffle') }.to raise_error(Faraday::ResourceNotFound)
     end
   end
+
+  context 'get_version' do
+    it 'with valid module name' do
+      expect(@forge_helper.send(:get_version, @forge_helper.get_mod('puppetlabs-strings'))).to match SemanticPuppet::Version.parse('999.999.999')
+    end
+  end
 end
