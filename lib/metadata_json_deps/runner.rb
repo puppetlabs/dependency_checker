@@ -1,12 +1,14 @@
 require 'json'
 require 'yaml'
 require 'net/http'
+require 'uri'
 require 'logger'
+require 'open-uri'
 
 # Main runner for MetadataJsonDeps
 class MetadataJsonDeps::Runner
-  def initialize(filename, updated_module, updated_module_version, verbose, use_slack, logs_file)
-    @module_names = return_modules(filename)
+  def initialize(managed_modules_path, updated_module, updated_module_version, verbose, use_slack, logs_file)
+    @module_names = return_modules(managed_modules_path)
     @updated_module = updated_module
     @logs_file = logs_file
     @updated_module_version = updated_module_version
@@ -102,12 +104,25 @@ class MetadataJsonDeps::Runner
     checker.check_dependencies
   end
 
-  # Retrieve the array of module names from the supplied filename
+  # Retrieve the array of module names from the supplied filename/URL
   # @return [Array] an array of module names
-  def return_modules(filename)
-    raise "File '#{filename}' is empty/does not exist" if File.size?(filename).nil?
+  def return_modules(managed_modules_path)
+    managed_modules = {}
+    managed_modules_yaml = {}
 
-    YAML.safe_load(File.open(filename))
+    begin
+      managed_modules = open(managed_modules_path).read
+    rescue StandardError
+      raise "*Error:* Ensure *#{managed_modules_path}* is a valid file path or URL"
+    end
+
+    begin
+      managed_modules_yaml = YAML.safe_load(managed_modules)
+    rescue StandardError
+      raise '*Error:* Ensure syntax of managed_modules file is a valid YAML array'
+    end
+
+    managed_modules_yaml
   end
 
   # Post message to console, Slack and/or a logfile based on whether they have been enabled

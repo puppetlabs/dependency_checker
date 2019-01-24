@@ -16,8 +16,8 @@ gem 'metadata_json_deps'
 ```
 
 The following rake task is available:
-- `rake compare_dependencies[managed_modules,module,version,verbose,use_slack]` Compare specfified module and version against dependencies of other modules 
-  - `managed_modules` Path to YAML file containing an array of modules to compare to
+- `rake compare_dependencies[managed_modules,module,version,verbose,use_slack,logs_file]` Compare specfified module and version against dependencies of other modules 
+  - `managed_modules` Path to local YAML file or URL for a raw YAML file containing an array of modules for checking
   - `module` Name of module on Puppet Forge using the syntax owner/name e.g. puppetlabs/stdlib
   - `version` Semantic version to compare against e.g. 5.0.1. 
   - `verbose` Boolean stating whether to display matches as well as non-matches. Defaults to false.
