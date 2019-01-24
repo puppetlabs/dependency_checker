@@ -17,83 +17,110 @@ module MetadataJsonDeps
     end
 
     def run
-      begin
-        @forge.get_mod(@updated_module.sub('/', '-'))
-        SemanticPuppet::Version.parse(@updated_module_version)
-      rescue StandardError => error
-        message = "Error: Verify *#{@updated_module}* exists on Puppet Forge! Verify semantic versioning syntax *#{@updated_module_version}*. \n"
-        puts message
-        post_to_slack(message) if @use_slack
-        post_to_logs(message) if @logs_file
-        raise message
-      end
+      validate_arguments()
 
-      @updated_module = @updated_module.sub('/', '-')
       message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
-      if check_deprecated(@forge.get_current_version(@updated_module), @forge.get_module_data(@updated_module))
-        message += "The module you are comparing against #{@updated_module.upcase} is DEPRECATED.\n"
 
+      # Post warning if @updated_module is deprecated
+      if @forge.check_module_deprecated(@updated_module)
+        message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n"
       end
-      @updated_module = @updated_module.sub('-', '/')
+
+      # Post results of dependency checks
+      message += run_dependency_checks()
+
+      post(message)
+    end
+
+    # Validate arguments from runner and return an error if any issues are encountered
+    def validate_arguments
+      raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid." unless check_module_exists(@updated_module)
+      raise "*Error:* Verify semantic versioning syntax *#{@updated_module_version}* of updated_module_version argument. \n" unless SemanticPuppet::Version.valid?(@updated_module_version)
+    end
+
+    # Check with forge if a specified module exists
+    # @param module_name [String]
+    # @return [Boolean] boolean based on whether the module exists or not
+    def check_module_exists(module_name)
+      @forge.check_module_exists(module_name)
+    end
+
+    # Perform dependency checks on modules supplied by @module_names
+    def run_dependency_checks
+      message = ''
+      # Cross reference dependencies from managed_modules file with @updated_module and @updated_module_version
       @module_names.each do |module_name|
-        message += "Checking *#{module_name}*.\n"
+        message += "Checking *#{module_name}* dependencies.\n"
         module_name = module_name.sub('/', '-')
 
-        begin
-          @forge.get_mod(module_name)
-        rescue StandardError => error
-          message += "Checked module name *#{module_name.sub('-', '/')}* could not be found. Verify *#{module_name.sub('-', '/')}* exists on Puppet Forge. \n\n"
+        # Check module_name is valid
+        if !check_module_exists(module_name)
+          message += "*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
           next
         end
 
-        module_data = @forge.get_module_data(module_name)
-        metadata = module_data['current_release']['metadata']
-        checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
-        dependencies = checker.check_dependencies
+        # Fetch module dependencies
+        dependencies = get_dependencies(module_name)
 
-        message += "The checked module #{module_name.upcase} is DEPRECATED.\n" if check_deprecated(@forge.get_current_version(module_name), module_data)
+        # Post warning if module_name is deprecated
+        message += "*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
 
         if dependencies.empty?
           message += "\tNo dependencies listed\n\n"
           next
         end
 
+        # Check each dependency to see if the latest version matchs the current modules' dependency constraints
         allMatch = true
-        not_deprecated = true
+        found_deprecation = false
         dependencies.each do |dependency, constraint, current, satisfied|
-          if satisfied
-            if @verbose
+          if satisfied && @verbose
               message += "\t#{dependency} (#{constraint}) *matches* #{current}\n"
-            end
           else
             allMatch = false
             message += "\t#{dependency} (#{constraint}) *doesn't match* #{current}\n"
           end
-          dependency = dependency.sub('/', '-')
-          not_deprecated = false if check_deprecated(current, @forge.get_module_data(dependency))
 
-          message += "\tThe dependency module #{dependency.upcase} is DEPRECATED.\n" if check_deprecated(current, @forge.get_module_data(dependency))
+          found_deprecation = true if @forge.check_module_deprecated(dependency)
+
+          # Post warning if dependency is deprecated
+          message += "\tThe dependency module *#{dependency}* is *deprecated*.\n" if found_deprecation
         end
 
-        message += "\tAll dependencies match\n" if allMatch && not_deprecated
+        message += "\tAll dependencies match\n" if allMatch && !found_deprecation
         message += "\n"
       end
-
-      puts message
-      post_to_slack(message) if @use_slack
-      post_to_logs(message) if @logs_file
-    rescue Interrupt
+      message
     end
 
-    def check_deprecated(version, module_data)
-      version.to_s.eql?('999.999.999') || version.to_s.eql?('99.99.99') || module_data['deprecated_at'] != nil
+    # Get dependencies of a supplied module and use the override values from @updated_module and @updated_module_version
+    # to verify if the depedencies are satisfied
+    # @param module_name [String]
+    # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
+    def get_dependencies(module_name)
+      module_data = @forge.get_module_data(module_name)
+      metadata = module_data['current_release']['metadata']
+      checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
+      checker.check_dependencies
     end
 
+    # Retrieve the array of module names from the supplied filename
+    # @return [Array] an array of module names
     def return_modules(filename)
       raise "File '#{filename}' is empty/does not exist" if File.size?(filename).nil?
       YAML.safe_load(File.open(filename))
     end
 
+    # Post message to console, Slack and/or a logfile based on whether they have been enabled
+    # @param message [String]
+    def post(message)
+      puts message
+      post_to_slack(message) if @use_slack
+      post_to_logs(message) if @logs_file
+    end
+
+    # Overwrite the logfile specified by @logs_file from @logsfile with a supplied message
+    # @param message [String]
     def post_to_logs(message)
       File.delete(@logs_file) if File.exists?(@logs_file)
       logger = Logger.new File.new(@logs_file, 'w')
@@ -101,6 +128,8 @@ module MetadataJsonDeps
       logger.info message
     end
 
+    # Post a supplied message to Slack using a Slack webhook specified by @slack_webhook
+    # @param message [String]
     def post_to_slack(message)
       raise 'METADATA_JSON_DEPS_SLACK_WEBHOOK env var not specified' unless @slack_webhook
 

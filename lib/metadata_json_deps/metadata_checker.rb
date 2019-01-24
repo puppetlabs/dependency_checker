@@ -5,10 +5,13 @@ module MetadataJsonDeps
     def initialize(metadata, forge, updated_module, updated_module_version)
       @metadata = metadata
       @forge = forge
-      @updated_module = updated_module
+      @updated_module = updated_module.sub('-', '/')
       @updated_module_version = updated_module_version
     end
 
+    # Perform constraint comparisons of dependencies based on their latest version, and also
+    # override any occurance of @updated_module with @updated_module_version
+    # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
     def check_dependencies
       get_module_dependencies.map do |dependency, constraint|
         dependency = dependency.sub('-', '/')
@@ -19,6 +22,8 @@ module MetadataJsonDeps
 
     private
 
+    # Retrieve dependencies from @metedata
+    # @return [Map] a map with the name of the dependency and its constraint
     def get_module_dependencies
       return [] unless @metadata['dependencies']
 

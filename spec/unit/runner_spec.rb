@@ -32,11 +32,11 @@ describe 'compare_dependencies' do
     end
 
     it 'is expected to raise an error when module name could not be found in the Forge' do
-      expect { MetadataJsonDeps::Runner.run(managed_modules, 'invalid_name', '1.0.0', verbose) }.to raise_error(RuntimeError, "Error: Verify *invalid_name* exists on Puppet Forge! Verify semantic versioning syntax *1.0.0*. \n")
+      expect { MetadataJsonDeps::Runner.run(managed_modules, 'invalid_name', '1.0.0', verbose) }.to raise_error(RuntimeError, "*Error:* Could not find *invalid_name* on Puppet Forge! Ensure updated_module argument is valid.")
     end
 
     it 'is expected to raise an error when version has an invalid syntax' do
-      expect { MetadataJsonDeps::Runner.run(managed_modules, 'puppetlabs-stdlib', '1.00', verbose) }.to raise_error(RuntimeError, "Error: Verify *puppetlabs-stdlib* exists on Puppet Forge! Verify semantic versioning syntax *1.00*. \n")
+      expect { MetadataJsonDeps::Runner.run(managed_modules, 'puppetlabs-stdlib', '1.00', verbose) }.to raise_error(RuntimeError, "*Error:* Verify semantic versioning syntax *1.00* of updated_module_version argument.")
     end
   end
 end
