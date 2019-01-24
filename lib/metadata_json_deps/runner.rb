@@ -53,7 +53,7 @@ class MetadataJsonDeps::Runner
 
       # Check module_name is valid
       unless check_module_exists(module_name)
-        message += "*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
+        message += "\t*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
         next
       end
 
@@ -61,7 +61,7 @@ class MetadataJsonDeps::Runner
       dependencies = get_dependencies(module_name)
 
       # Post warning if module_name is deprecated
-      message += "*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
+      message += "\t*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
 
       if dependencies.empty?
         message += "\tNo dependencies listed\n\n"
