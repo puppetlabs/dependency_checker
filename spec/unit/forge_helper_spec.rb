@@ -1,7 +1,6 @@
 require 'metadata_json_deps'
 
 describe 'forge_helper' do
-
   before(:all) do
     @forge_helper = MetadataJsonDeps::ForgeHelper.new
   end
