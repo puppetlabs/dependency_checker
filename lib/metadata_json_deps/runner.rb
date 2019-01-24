@@ -19,7 +19,7 @@ class MetadataJsonDeps::Runner
   def run
     validate_arguments
 
-    message = "Comparing modules against *#{@updated_module}* version *#{@updated_module_version}*\n\n"
+    message = "_*Starting dependency checks...*_\nOverriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n"
 
     # Post warning if @updated_module is deprecated
     message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @forge.check_module_deprecated(@updated_module)
