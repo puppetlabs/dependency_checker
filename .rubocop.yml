@@ -8,6 +8,7 @@ AllCops:
   - Gemfile
   - Rakefile
   - spec/fixtures/**/*
+  - vendor/bundle/**/*
 Metrics/LineLength:
   Description: People have wide screens, use them.
   Max: 200
