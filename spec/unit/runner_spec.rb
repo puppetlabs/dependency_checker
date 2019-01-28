@@ -33,7 +33,7 @@ describe 'compare_dependencies' do
 
   context 'compare_dependencies task with invalid arguments' do
     it 'is expected to raise an error when managed_modules is not found' do
-      error_message = "*Error:* Ensure *invalid path* is a valid file path or URL"
+      error_message = '*Error:* Ensure *invalid path* is a valid file path or URL'
       expect { MetadataJsonDeps::Runner.run('invalid path', 'puppetlabs-stdlib', '1.0.0', verbose) }.to raise_error(RuntimeError, error_message)
     end
 

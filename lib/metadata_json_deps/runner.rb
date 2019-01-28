@@ -111,7 +111,13 @@ class MetadataJsonDeps::Runner
     managed_modules_yaml = {}
 
     begin
-      managed_modules = open(managed_modules_path).read
+      if managed_modules_path =~ URI::DEFAULT_PARSER.make_regexp
+        managed_modules = Net::HTTP.get(URI.parse(managed_modules_path))
+      elsif File.file?(managed_modules_path)
+        managed_modules = File.read(managed_modules_path)
+      else
+        raise 'Error'
+      end
     rescue StandardError
       raise "*Error:* Ensure *#{managed_modules_path}* is a valid file path or URL"
     end
