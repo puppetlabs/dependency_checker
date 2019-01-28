@@ -8,6 +8,8 @@ require 'open-uri'
 # Main runner for MetadataJsonDeps
 class MetadataJsonDeps::Runner
   def initialize(managed_modules_path, updated_module, updated_module_version, verbose, use_slack, logs_file)
+    @default_managed_modules_path = 'https://gist.githubusercontent.com/eimlav/6df50eda0b1c57c1ab8c33b64c82c336/raw/managed_modules.yaml'
+    managed_modules_path ||= @default_managed_modules_path
     @module_names = return_modules(managed_modules_path)
     @updated_module = updated_module
     @logs_file = logs_file
@@ -25,6 +27,9 @@ class MetadataJsonDeps::Runner
 
     # Post warning if @updated_module is deprecated
     message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @forge.check_module_deprecated(@updated_module)
+
+    # Post message if using default managed_modules
+    message += "No managed_modules argument specified. Defaulting to Puppet supported modules.\n\n" if @managed_modules_path == @default_managed_modules_path
 
     # Post results of dependency checks
     message += run_dependency_checks
@@ -171,7 +176,11 @@ class MetadataJsonDeps::Runner
     raise 'Encountered issue posting to Slack' unless response.code == '200'
   end
 
-  def self.run(filename, module_name, new_version, verbose = 'false', use_slack = 'false', logs_file)
-    new(filename, module_name, new_version, verbose == 'true', use_slack == 'true', logs_file).run
+  def get_metadata_from_file(filename)
+    JSON.parse(File.read(filename))
+  end
+
+  def self.run(managed_modules_path, module_name, new_version, verbose = 'false', use_slack = 'false', logs_file)
+    new(managed_modules_path, module_name, new_version, verbose == 'true', use_slack == 'true', logs_file).run
   end
 end
