@@ -3,7 +3,7 @@ require 'yaml'
 require 'net/http'
 require 'uri'
 require 'logger'
-require 'open-uri'
+require 'parallel'
 
 # Main runner for MetadataJsonDeps
 class MetadataJsonDeps::Runner
@@ -52,27 +52,26 @@ class MetadataJsonDeps::Runner
 
   # Perform dependency checks on modules supplied by @module_names
   def run_dependency_checks
-    message = ''
     # Cross reference dependencies from managed_modules file with @updated_module and @updated_module_version
-    @module_names.each do |module_name|
-      message += "Checking *#{module_name}* dependencies.\n"
+    messages = Parallel.map(@module_names) do |module_name|
+      mod_message = "Checking *#{module_name}* dependencies.\n"
       module_name = module_name.sub('/', '-')
 
       # Check module_name is valid
       unless check_module_exists(module_name)
-        message += "\t*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
-        next
+        mod_message += "\t*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
+        next mod_message
       end
 
       # Fetch module dependencies
       dependencies = get_dependencies(module_name)
 
       # Post warning if module_name is deprecated
-      message += "\t*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
+      mod_message += "\t*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
 
       if dependencies.empty?
-        message += "\tNo dependencies listed\n\n"
-        next
+        mod_message += "\tNo dependencies listed\n\n"
+        next mod_message
       end
 
       # Check each dependency to see if the latest version matchs the current modules' dependency constraints
@@ -80,21 +79,28 @@ class MetadataJsonDeps::Runner
       found_deprecation = false
       dependencies.each do |dependency, constraint, current, satisfied|
         if satisfied && @verbose
-          message += "\t#{dependency} (#{constraint}) *matches* #{current}\n"
+          mod_message += "\t#{dependency} (#{constraint}) *matches* #{current}\n"
         else
           all_match = false
-          message += "\t#{dependency} (#{constraint}) *doesn't match* #{current}\n"
+          mod_message += "\t#{dependency} (#{constraint}) *doesn't match* #{current}\n"
         end
 
         found_deprecation = true if @forge.check_module_deprecated(dependency)
 
         # Post warning if dependency is deprecated
-        message += "\tThe dependency module *#{dependency}* is *deprecated*.\n" if found_deprecation
+        mod_message += "\tThe dependency module *#{dependency}* is *deprecated*.\n" if found_deprecation
       end
 
-      message += "\tAll dependencies match\n" if all_match && !found_deprecation
-      message += "\n"
+      mod_message += "\tAll dependencies match\n" if all_match && !found_deprecation
+      mod_message += "\n"
+      mod_message
     end
+
+    message = ''
+    messages.each do |result|
+      message += result
+    end
+
     message
   end
 
