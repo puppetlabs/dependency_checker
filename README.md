@@ -46,3 +46,14 @@ e.g.
 
 ### Posting output to Slack
 By passing true to the `use_slack` argument of the `compare_dependencies` rake task, you can have the output of the comparison sent to a Slack channel. To do this see [here](https://api.slack.com/tutorials/slack-apps-hello-world) on setting up a webhook on your Slack workspace, then supply the webhook to metadata-json-deps by specifying an environment variable called `METADATA_JSON_DEPS_SLACK_WEBHOOK` containing the webhook generated from Slack.
+
+### Example managed_modules file
+Below is an example of the syntax you should use when declaring the values in your `managed_modules` file.
+```
+---
+- puppetlabs/puppet_conf
+- puppetlabs/inifile
+- puppetlabs/tomcat
+- puppetlabs/test
+- puppetlabs/docker_platform
+```
