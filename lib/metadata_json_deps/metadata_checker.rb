@@ -5,8 +5,8 @@ class MetadataJsonDeps::MetadataChecker
   def initialize(metadata, forge, updated_module, updated_module_version)
     @metadata = metadata
     @forge = forge
-    @updated_module = updated_module.sub('-', '/')
-    @updated_module_version = updated_module_version
+    @updated_module = updated_module.sub('-', '/') if updated_module
+    @updated_module_version = updated_module_version if updated_module_version
   end
 
   # Perform constraint comparisons of dependencies based on their latest version, and also
@@ -25,11 +25,11 @@ class MetadataJsonDeps::MetadataChecker
   # Retrieve dependencies from @metedata
   # @return [Map] a map with the name of the dependency and its constraint
   def fetch_module_dependencies
-    return [] unless @metadata['dependencies']
+    return [] unless @metadata[:dependencies]
 
-    @metadata['dependencies'].map do |dep|
-      constraint = dep['version_requirement'] || '>= 0'
-      [dep['name'], SemanticPuppet::VersionRange.parse(constraint)]
+    @metadata[:dependencies].map do |dep|
+      constraint = dep[:version_requirement] || '>= 0'
+      [dep[:name], SemanticPuppet::VersionRange.parse(constraint)]
     end
   end
 end

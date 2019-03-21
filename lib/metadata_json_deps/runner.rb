@@ -7,38 +7,45 @@ require 'parallel'
 
 # Main runner for MetadataJsonDeps
 class MetadataJsonDeps::Runner
-  def initialize(managed_modules_path, updated_module, updated_module_version, verbose, use_slack, logs_file)
-    @default_managed_modules_path = 'https://gist.githubusercontent.com/eimlav/6df50eda0b1c57c1ab8c33b64c82c336/raw/managed_modules.yaml'
-    managed_modules_path ||= @default_managed_modules_path
-    @module_names = return_modules(managed_modules_path)
-    @updated_module = updated_module
-    @logs_file = logs_file
-    @updated_module_version = updated_module_version
+  def initialize(managed_modules_arg, override, verbose)
+    @managed_modules_arg = managed_modules_arg
+    @override = !override.nil?
+    @updated_module = override[0] if @override
+    @updated_module_version = override[1] if @override
     @verbose = verbose
     @forge = MetadataJsonDeps::ForgeHelper.new
-    @use_slack = use_slack
-    @slack_webhook = ENV['METADATA_JSON_DEPS_SLACK_WEBHOOK']
   end
 
   def run
-    validate_arguments
+    validate_override if @override
 
-    message = "_*Starting dependency checks...*_\nOverriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n"
+    message = "_*Starting dependency checks...*_\n\n"
+
+    # If override is enabled
+    message += "Overriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n" if @override
 
     # Post warning if @updated_module is deprecated
-    message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @forge.check_module_deprecated(@updated_module)
+    message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @override && @forge.check_module_deprecated(@updated_module)
 
     # Post message if using default managed_modules
-    message += "No managed_modules argument specified. Defaulting to Puppet supported modules.\n\n" if @managed_modules_path == @default_managed_modules_path
+    if @managed_modules_arg.nil?
+      message += "No local path(s) to metadata.json or file argument specified. Defaulting to Puppet supported modules.\n\n"
+      @managed_modules_arg = 'https://gist.githubusercontent.com/eimlav/6df50eda0b1c57c1ab8c33b64c82c336/raw/managed_modules.yaml'
+    end
+
+    @use_local_files = @managed_modules_arg.instance_of?(Array) || @managed_modules_arg.end_with?('.json')
+
+    @modules = @use_local_files ? [@managed_modules_arg] : return_modules(@managed_modules_arg)
 
     # Post results of dependency checks
     message += run_dependency_checks
+    message += 'All modules have valid dependencies.' if run_dependency_checks.empty?
 
     post(message)
   end
 
-  # Validate arguments from runner and return an error if any issues are encountered
-  def validate_arguments
+  # Validate override from runner and return an error if any issues are encountered
+  def validate_override
     raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid." unless check_module_exists(@updated_module)
     raise "*Error:* Verify semantic versioning syntax *#{@updated_module_version}* of updated_module_version argument." unless SemanticPuppet::Version.valid?(@updated_module_version)
   end
@@ -50,39 +57,44 @@ class MetadataJsonDeps::Runner
     @forge.check_module_exists(module_name)
   end
 
-  # Perform dependency checks on modules supplied by @module_names
+  # Perform dependency checks on modules supplied by @modules
   def run_dependency_checks
     # Cross reference dependencies from managed_modules file with @updated_module and @updated_module_version
-    messages = Parallel.map(@module_names) do |module_name|
-      mod_message = "Checking *#{module_name}* dependencies.\n"
-      module_name = module_name.sub('/', '-')
+    messages = Parallel.map(@modules) do |module_path|
+      module_name = @use_local_files ? get_name_from_metadata(module_path) : module_path
+      mod_message = "Checking *#{module_path}* dependencies.\n"
 
-      # Check module_name is valid
+      # Check module_path is valid
       unless check_module_exists(module_name)
-        mod_message += "\t*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
+        mod_message += "\t*Error:* Could not find *#{module_path}* on Puppet Forge! Ensure the module exists.\n\n"
         next mod_message
       end
 
       # Fetch module dependencies
-      dependencies = get_dependencies(module_name)
+      dependencies = @use_local_files ? get_dependencies_from_metadata(module_path) : get_dependencies(module_name)
 
-      # Post warning if module_name is deprecated
-      mod_message += "\t*Warning:* The module *#{module_name}* is *deprecated*.\n" if @forge.check_module_deprecated(module_name)
+      # Post warning if module_path is deprecated
+      mod_deprecated = @forge.check_module_deprecated(module_name)
+      mod_message += "\t*Warning:* *#{module_name}* is *deprecated*.\n" if mod_deprecated
 
       if dependencies.empty?
         mod_message += "\tNo dependencies listed\n\n"
-        next mod_message
+        next mod_message if @verbose && !mod_deprecated
       end
 
       # Check each dependency to see if the latest version matchs the current modules' dependency constraints
       all_match = true
-      found_deprecation = false
       dependencies.each do |dependency, constraint, current, satisfied|
         if satisfied && @verbose
           mod_message += "\t#{dependency} (#{constraint}) *matches* #{current}\n"
-        else
+        elsif !satisfied
           all_match = false
           mod_message += "\t#{dependency} (#{constraint}) *doesn't match* #{current}\n"
+        end
+
+        if @forge.check_module_deprecated(dependency)
+          all_match = false
+          mod_message += "\t\t*Warning:* *#{dependency}* is *deprecated*.\n"
         end
 
         found_deprecation = true if @forge.check_module_deprecated(dependency)
@@ -91,9 +103,12 @@ class MetadataJsonDeps::Runner
         mod_message += "\tThe dependency module *#{dependency}* is *deprecated*.\n" if found_deprecation
       end
 
-      mod_message += "\tAll dependencies match\n" if all_match && !found_deprecation
+      mod_message += "\tAll dependencies match\n" if all_match
       mod_message += "\n"
-      mod_message
+
+      # If @verbose is true, always post message
+      # If @verbose is false, only post if all dependencies don't match and/or if a dependency is deprecated
+      (all_match && !@verbose) ? '' : mod_message
     end
 
     message = ''
@@ -110,9 +125,27 @@ class MetadataJsonDeps::Runner
   # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
   def get_dependencies(module_name)
     module_data = @forge.get_module_data(module_name)
-    metadata = module_data['current_release']['metadata']
+
+    metadata = module_data.current_release.metadata
     checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
     checker.check_dependencies
+  end
+
+  # Get dependencies of a supplied module from a metadata.json file to verify if the depedencies are satisfied
+  # @param module_name [String]
+  # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
+  def get_dependencies_from_metadata(metadata_path)
+    metadata = JSON.parse(File.read(metadata_path), symbolize_names: true)
+    checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
+    checker.check_dependencies
+  end
+
+  # Get dependencies of a supplied module from a metadata.json file to verify if the depedencies are satisfied
+  # @param module_name [String]
+  # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
+  def get_name_from_metadata(metadata_path)
+    metadata = JSON.parse(File.read(metadata_path), symbolize_names: true)
+    metadata[:name]
   end
 
   # Retrieve the array of module names from the supplied filename/URL
@@ -142,51 +175,17 @@ class MetadataJsonDeps::Runner
     managed_modules_yaml
   end
 
-  # Post message to console, Slack and/or a logfile based on whether they have been enabled
+  # Post message to terminal
   # @param message [String]
   def post(message)
     puts message
-    post_to_slack(message) if @use_slack
-    post_to_logs(message) if @logs_file
   end
 
-  # Overwrite the logfile specified by @logs_file from @logsfile with a supplied message
-  # @param message [String]
-  def post_to_logs(message)
-    File.delete(@logs_file) if File.exist?(@logs_file)
-    logger = Logger.new File.new(@logs_file, 'w')
-    logger.datetime_format = '%Y-%m-%d %H:%M:%S'
-    logger.info message
+  def self.run_with_args(managed_modules_path, override, verbose)
+    new(managed_modules_path, override, verbose).run
   end
 
-  # Post a supplied message to Slack using a Slack webhook specified by @slack_webhook
-  # @param message [String]
-  def post_to_slack(message)
-    raise 'METADATA_JSON_DEPS_SLACK_WEBHOOK env var not specified' unless @slack_webhook
-
-    uri = URI.parse(@slack_webhook)
-    request = Net::HTTP::Post.new(uri)
-    request.content_type = 'application/json'
-    request.body = JSON.dump(
-      'text' => message,
-    )
-
-    req_options = {
-      use_ssl: uri.scheme == 'https'
-    }
-
-    response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|
-      http.request(request)
-    end
-
-    raise 'Encountered issue posting to Slack' unless response.code == '200'
-  end
-
-  def get_metadata_from_file(filename)
-    JSON.parse(File.read(filename))
-  end
-
-  def self.run(managed_modules_path, module_name, new_version, verbose = 'false', use_slack = 'false', logs_file)
-    new(managed_modules_path, module_name, new_version, verbose == 'true', use_slack == 'true', logs_file).run
+  def self.run(managed_modules_path)
+    new(managed_modules_path, nil, false, nil).run
   end
 end
