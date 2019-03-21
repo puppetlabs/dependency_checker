@@ -64,7 +64,7 @@ class MetadataJsonDeps::Runner
       module_name = @use_local_files ? get_name_from_metadata(module_path) : module_path
       mod_message = "Checking *#{module_path}* dependencies.\n"
       exists_on_forge = true
-      
+
       # Check module_path is valid
       unless check_module_exists(module_name)
         exists_on_forge = false
