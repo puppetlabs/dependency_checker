@@ -48,8 +48,11 @@ class MetadataJsonDeps::ForgeHelper
     module_data = get_module_data(module_name)
     version = get_current_version(module_name)
     version.to_s.eql?('999.999.999') || version.to_s.eql?('99.99.99') || !module_data.attribute('deprecated_at').nil?
+  end
+
   private
 
+  def get_version(module_data)
     SemanticPuppet::Version.parse(module_data.current_release.version)
   end
 end
