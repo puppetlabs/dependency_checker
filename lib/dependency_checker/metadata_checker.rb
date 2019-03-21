@@ -1,7 +1,7 @@
 require 'semantic_puppet'
 
 # Checks dependencies of passed in metadata and performs checks to verify constraints
-class MetadataJsonDeps::MetadataChecker
+class DependencyChecker::MetadataChecker
   def initialize(metadata, forge, updated_module, updated_module_version)
     @metadata = metadata
     @forge = forge

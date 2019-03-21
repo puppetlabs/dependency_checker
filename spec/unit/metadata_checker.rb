@@ -1,13 +1,13 @@
-require 'metadata_json_deps'
+require 'dependency_checker'
 
-describe 'metadata_checker' do
+describe 'dependency_checker' do
   before(:all) do
-    @forge = MetadataJsonDeps::ForgeHelper.new
+    @forge = DependencyChecker::ForgeHelper.new
     @updated_module = 'puppetlabs-stdlib'
     @updated_module_version = '10.0.0'
     @metadata = @forge.get_mod(@updated_module)
     metadata = @forge.get_module_data('puppetlabs-motd')['current_release']['metadata']
-    @checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
+    @checker = DependencyChecker::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
   end
 
   context 'check_dependencies method' do
