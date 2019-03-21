@@ -6,9 +6,19 @@ The metadata-json-deps tool validates dependencies in `metadata.json` files in P
 
 metadata-json-deps is compatible with Ruby versions 2.0.0 and newer.
 
+## Installation
+
+via `gem` command:
+
+    `gem install metadata_json_deps`
+
+via Gemfile:
+
+    `gem 'metadata_json_deps`
+
 ## Usage
 
-Install the gem by supplying it in your Gemfile:
+Run against a single Puppet module metadata.json file
 
     $ metadata-json-deps /path/to/metadata.json
 

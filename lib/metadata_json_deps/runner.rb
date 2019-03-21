@@ -35,7 +35,7 @@ class MetadataJsonDeps::Runner
 
     @use_local_files = @managed_modules_arg.instance_of?(Array) || @managed_modules_arg.end_with?('.json')
 
-    @modules = @use_local_files ? [@managed_modules_arg] : return_modules(@managed_modules_arg)
+    @modules = @use_local_files ? Array(@managed_modules_arg) : return_modules(@managed_modules_arg)
 
     # Post results of dependency checks
     message += run_dependency_checks
@@ -63,18 +63,18 @@ class MetadataJsonDeps::Runner
     messages = Parallel.map(@modules) do |module_path|
       module_name = @use_local_files ? get_name_from_metadata(module_path) : module_path
       mod_message = "Checking *#{module_path}* dependencies.\n"
-
+      exists_on_forge = true
+      
       # Check module_path is valid
       unless check_module_exists(module_name)
-        mod_message += "\t*Error:* Could not find *#{module_path}* on Puppet Forge! Ensure the module exists.\n\n"
-        next mod_message
+        exists_on_forge = false
       end
 
       # Fetch module dependencies
       dependencies = @use_local_files ? get_dependencies_from_metadata(module_path) : get_dependencies(module_name)
 
       # Post warning if module_path is deprecated
-      mod_deprecated = @forge.check_module_deprecated(module_name)
+      mod_deprecated = exists_on_forge ? @forge.check_module_deprecated(module_name) : false
       mod_message += "\t*Warning:* *#{module_name}* is *deprecated*.\n" if mod_deprecated
 
       if dependencies.empty?
