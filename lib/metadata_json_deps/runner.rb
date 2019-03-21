@@ -67,10 +67,16 @@ class MetadataJsonDeps::Runner
 
       # Check module_path is valid
       unless check_module_exists(module_name)
-        exists_on_forge = false
+        if @use_local_files
+          exists_on_forge = false
+        else
+          mod_message += "\t*Error:* Could not find *#{module_name}* on Puppet Forge! Ensure the module exists.\n\n"
+          next mod_message
+        end
       end
 
       # Fetch module dependencies
+
       dependencies = @use_local_files ? get_dependencies_from_metadata(module_path) : get_dependencies(module_name)
 
       # Post warning if module_path is deprecated
