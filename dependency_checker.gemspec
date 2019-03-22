@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'dependency_checker'
-  s.version     = '0.1.1'
+  s.version     = '0.2.0'
   s.executables << 'dependency-checker'
   s.licenses    = ['MIT']
   s.summary     = 'Check your Puppet metadata dependencies'
@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
     Verify all your dependencies allow the latest versions on Puppet Forge. 
     Based on https://github.com/ekohl/metadata_json_deps
   EOF
-  s.authors     = ['Ewoud Kohl van Wijngaarden', 'Puppet, Inc.']
+  s.authors     = ['Ewoud Kohl van Wijngaarden', 'Puppet']
   s.email       = ['info@puppet.com']
   s.files       = Dir['lib/**/*.rb'] + Dir['bin/*']
   s.extra_rdoc_files = ['README.md']
