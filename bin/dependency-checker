@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'optparse'
-require 'metadata_json_deps'
+require 'dependency_checker'
 require 'json'
 
 options = {}
@@ -50,4 +50,4 @@ end
 # Default :verbose to false
 options[:verbose] ||= false
 
-MetadataJsonDeps::Runner.run_with_args(managed_modules, options[:override], options[:verbose])
+DependencyChecker::Runner.run_with_args(managed_modules, options[:override], options[:verbose])
