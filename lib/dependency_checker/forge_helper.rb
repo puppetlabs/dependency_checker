@@ -2,7 +2,7 @@ require 'puppet_forge'
 require 'semantic_puppet'
 
 # Helper class for fetching data from the Forge and perform some basic operations
-class MetadataJsonDeps::ForgeHelper
+class DependencyChecker::ForgeHelper
   def initialize(cache = {})
     @cache = cache
   end

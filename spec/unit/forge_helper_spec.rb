@@ -1,8 +1,8 @@
-require 'metadata_json_deps'
+require 'dependency_checker'
 
 describe 'forge_helper' do
   before(:all) do
-    @forge_helper = MetadataJsonDeps::ForgeHelper.new
+    @forge_helper = DependencyChecker::ForgeHelper.new
   end
 
   context 'get_current_version method' do

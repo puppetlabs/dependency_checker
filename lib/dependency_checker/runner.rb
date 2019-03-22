@@ -5,15 +5,15 @@ require 'uri'
 require 'logger'
 require 'parallel'
 
-# Main runner for MetadataJsonDeps
-class MetadataJsonDeps::Runner
+# Main runner for DependencyChecker
+class DependencyChecker::Runner
   def initialize(managed_modules_arg, override, verbose)
     @managed_modules_arg = managed_modules_arg
     @override = !override.nil?
     @updated_module = override[0] if @override
     @updated_module_version = override[1] if @override
     @verbose = verbose
-    @forge = MetadataJsonDeps::ForgeHelper.new
+    @forge = DependencyChecker::ForgeHelper.new
   end
 
   def run
@@ -133,7 +133,7 @@ class MetadataJsonDeps::Runner
     module_data = @forge.get_module_data(module_name)
 
     metadata = module_data.current_release.metadata
-    checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
+    checker = DependencyChecker::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
     checker.check_dependencies
   end
 
@@ -142,7 +142,7 @@ class MetadataJsonDeps::Runner
   # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
   def get_dependencies_from_metadata(metadata_path)
     metadata = JSON.parse(File.read(metadata_path), symbolize_names: true)
-    checker = MetadataJsonDeps::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
+    checker = DependencyChecker::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
     checker.check_dependencies
   end
 
