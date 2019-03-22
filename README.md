@@ -53,7 +53,7 @@ If attempting to use both `-o` and `-c`, an error will be thrown as these can on
 You can also integrate `dependency-checker` checks into your tests using a Rake task:
 
 ```ruby
-require 'metadata_json_deps'
+require 'dependency_checker'
 
 desc 'Run dependency-checker'
 task :metadata_deps do
