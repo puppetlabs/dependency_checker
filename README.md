@@ -10,11 +10,11 @@ dependency-checker is compatible with Ruby versions 2.0.0 and newer.
 
 via `gem` command:
 
-    `gem install metadata_json_deps`
+    `gem install dependency_checker`
 
 via Gemfile:
 
-    `gem 'metadata_json_deps`
+    `gem 'dependency_checker`
 
 ## Usage
 
