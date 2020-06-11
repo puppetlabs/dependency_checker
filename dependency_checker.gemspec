@@ -23,7 +23,10 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rake', '~> 13.0'
   s.add_runtime_dependency 'semantic_puppet', '~> 1.0'
 
+  s.add_development_dependency 'codecov'
   s.add_development_dependency 'github_changelog_generator', '~> 1.15'
   s.add_development_dependency 'rspec', '~> 3.9'
   s.add_development_dependency 'rubocop'
+  s.add_development_dependency 'simplecov-console'
+  s.add_development_dependency 'simplecov'
 end

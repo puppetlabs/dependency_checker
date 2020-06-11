@@ -8,7 +8,7 @@ before_install:
 - gem --version
 - bundle -v
 script:
-- bundle exec $CHECK
+- SIMPLECOV=yes bundle exec $CHECK
 rvm:
 - 2.4
 - 2.7
