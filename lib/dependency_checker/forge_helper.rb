@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'puppet_forge'
 require 'semantic_puppet'
 

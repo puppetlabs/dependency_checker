@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'semantic_puppet'
 
 # Checks dependencies of passed in metadata and performs checks to verify constraints

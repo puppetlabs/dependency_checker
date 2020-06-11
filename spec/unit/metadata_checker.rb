@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'dependency_checker'
 
 describe 'dependency_checker' do

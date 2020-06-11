@@ -10,7 +10,8 @@ before_install:
 script:
 - bundle exec $CHECK
 rvm:
-- 2.4.1
+- 2.4
+- 2.7
 matrix:
   fast_finish: true
   include:
