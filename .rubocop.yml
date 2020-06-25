@@ -1,7 +1,7 @@
 ---
 AllCops:
   DisplayCopNames: true
-  TargetRubyVersion: '2.2'
+  TargetRubyVersion: '2.4'
   Include:
   - "/**/*.rb"
   Exclude:
@@ -47,7 +47,6 @@ Style/TrailingCommaInArguments:
 Style/SymbolArray:
   Description: Using percent style obscures symbolic intent of array's contents.
   EnforcedStyle: brackets
-inherit_from: ".rubocop_todo.yml"
 Style/CollectionMethods:
   Enabled: true
 Style/MethodCalledOnDoEndBlock:
