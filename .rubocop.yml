@@ -49,12 +49,18 @@ Style/SymbolArray:
   EnforcedStyle: brackets
 Style/CollectionMethods:
   Enabled: true
+Style/ConditionalAssignment:
+  Enabled: false
+Style/HashSyntax:
+  Enabled: false
 Style/MethodCalledOnDoEndBlock:
   Enabled: true
 Style/StringMethods:
   Enabled: true
 Layout/EndOfLine:
   Enabled: false
+Layout/HashAlignment:
+  EnforcedHashRocketStyle: table
 Metrics/AbcSize:
   Enabled: false
 Metrics/BlockLength:

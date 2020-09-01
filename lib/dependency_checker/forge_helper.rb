@@ -52,9 +52,28 @@ class DependencyChecker::ForgeHelper
     version.to_s.eql?('999.999.999') || version.to_s.eql?('99.99.99') || !module_data.attribute('deprecated_at').nil?
   end
 
+  # Gets a list of all modules in a namespace, optionally filtered by endorsement.
+  # @param [String] namespace The namespace to search
+  # @param [String] endorsement to filter by (supported/approved/partner)
+  # @return [Array] list of modules
+  def modules_in_namespace(namespace, endorsement = nil)
+    modules = PuppetForge::Module.where(
+                :owner           => namespace, # rubocop:disable Layout/FirstArgumentIndentation
+                :hide_deprecated => true,
+                :module_groups   => 'base pe_only',
+                :endorsements    => endorsement,
+              )
+
+    raise "No modules found for #{namespace}." if modules.total.zero?
+
+    modules.unpaginated.map { |m| m.slug }
+  end
+
   private
 
   def get_version(module_data)
+    return SemanticPuppet::Version.parse('999.999.999') unless module_data.current_release
+
     SemanticPuppet::Version.parse(module_data.current_release.version)
   end
 end

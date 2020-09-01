@@ -15,8 +15,36 @@ OptionParser.new { |opts|
     options[:current_override] = current_override
   end
 
-  opts.on('-v', '--[no-]verbose', 'Run verbosely') do |verbose|
-    options[:verbose] = verbose
+  opts.on('-n', '--namespace namespace', 'Check all modules in a given namespace (filter with endorsements).') do |namespace|
+    options[:namespace] = namespace
+  end
+
+  opts.on('--endorsement endorsement', 'Filter a namespace search by endorsement (supported/approved/partner).') do |endorsement|
+    raise 'You may only filter by one endorsement at a time' if options[:endorsement]
+
+    options[:endorsement] = endorsement
+  end
+
+  opts.on('--es', '--supported', 'Shorthand for `--endorsement supported`') do
+    raise 'You may only filter by one endorsement at a time' if options[:endorsement]
+
+    options[:endorsement] = 'supported'
+  end
+
+  opts.on('--ea', '--approved', 'Shorthand for `--endorsement approved`') do
+    raise 'You may only filter by one endorsement at a time' if options[:endorsement]
+
+    options[:endorsement] = 'approved'
+  end
+
+  opts.on('--ep', '--partner', 'Shorthand for `--endorsement partner`') do
+    raise 'You may only filter by one endorsement at a time' if options[:endorsement]
+
+    options[:endorsement] = 'partner'
+  end
+
+  opts.on('-v', '--[no-]verbose', 'Run verbosely') do
+    options[:verbose] = true
   end
 
   opts.on('-h', '--help', 'Display help') do
@@ -24,13 +52,6 @@ OptionParser.new { |opts|
     exit
   end
 }.parse!
-
-# Determine which modules to pass on to runner
-managed_modules = nil
-unless ARGV.empty?
-  # If length == 1, only pass first argument, else pass the array of metadata.json files
-  managed_modules = ((ARGV.length == 1) ? ARGV[0] : ARGV)
-end
 
 # Raise error if both :override and :current_override are specified
 if options[:override] && options[:current_override]
@@ -51,4 +72,21 @@ end
 # Default :verbose to false
 options[:verbose] ||= false
 
-DependencyChecker::Runner.run_with_args(managed_modules, options[:override], options[:verbose])
+runner = DependencyChecker::Runner.new(options[:verbose])
+
+if options[:namespace]
+  runner.resolve_from_namespace(options[:namespace], options[:endorsement])
+
+elsif ARGV.empty?
+  puts "No module criteria specified. Defaulting to IAC supported modules.\n\n"
+  runner.resolve_from_path('https://puppetlabs.github.io/iac/modules.json')
+
+elsif ARGV.map { |arg| File.basename arg } != ['metadata.json']
+  runner.resolve_from_path(ARGV.first)
+
+else
+  runner.resolve_from_files(ARGV)
+end
+
+runner.override = options[:override]
+runner.run
