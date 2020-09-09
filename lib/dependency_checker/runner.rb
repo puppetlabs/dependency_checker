@@ -2,54 +2,51 @@
 
 require 'json'
 require 'yaml'
-require 'net/http'
-require 'uri'
+require 'open-uri'
 require 'logger'
 require 'parallel'
 
 # Main runner for DependencyChecker
 class DependencyChecker::Runner
-  def initialize(managed_modules_arg, override, verbose)
-    @managed_modules_arg = managed_modules_arg
-    @override = !override.nil?
-    @updated_module = override[0] if @override
-    @updated_module_version = override[1] if @override
+  def initialize(verbose = false)
+    @forge   = DependencyChecker::ForgeHelper.new
     @verbose = verbose
-    @forge = DependencyChecker::ForgeHelper.new
+  end
+
+  def resolve_from_namespace(namespace, endorsement)
+    @modules = @forge.modules_in_namespace(namespace, endorsement)
+  end
+
+  def resolve_from_path(path)
+    @modules = return_modules(path)
+  end
+
+  def resolve_from_files(metadata_files)
+    @use_local_files = true
+    @modules         = Array(metadata_files) # should already be an array, but just in case
+  end
+
+  def override=(override)
+    return unless override.is_a? Array
+
+    @updated_module, @updated_module_version = override
+
+    raise '*Error:* Pass an override in the form `--override module,version`' unless override.size == 2
+    raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid." unless check_module_exists(@updated_module)
+    raise "*Error:* Verify semantic versioning syntax *#{@updated_module_version}* of updated_module_version argument." unless SemanticPuppet::Version.valid?(@updated_module_version)
+
+    puts "Overriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n"
+    puts "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @forge.check_module_deprecated(@updated_module)
   end
 
   def run
-    validate_override if @override
-
-    message = "_*Starting dependency checks...*_\n\n"
-
-    # If override is enabled
-    message += "Overriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n" if @override
-
-    # Post warning if @updated_module is deprecated
-    message += "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @override && @forge.check_module_deprecated(@updated_module)
-
-    # Post message if using default managed_modules
-    if @managed_modules_arg.nil?
-      message += "No local path(s) to metadata.json or file argument specified. Defaulting to Puppet supported modules.\n\n"
-      @managed_modules_arg = 'https://gist.githubusercontent.com/eimlav/6df50eda0b1c57c1ab8c33b64c82c336/raw/managed_modules.yaml'
-    end
-
-    @use_local_files = @managed_modules_arg.instance_of?(Array) || @managed_modules_arg.end_with?('.json')
-
-    @modules = @use_local_files ? Array(@managed_modules_arg) : return_modules(@managed_modules_arg)
+    puts "_*Starting dependency checks...*_\n\n"
 
     # Post results of dependency checks
-    message += run_dependency_checks
-    message += 'All modules have valid dependencies.' if run_dependency_checks.empty?
+    message = run_dependency_checks
+    message = 'All modules have valid dependencies.' if message.empty?
 
     post(message)
-  end
-
-  # Validate override from runner and return an error if any issues are encountered
-  def validate_override
-    raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid." unless check_module_exists(@updated_module)
-    raise "*Error:* Verify semantic versioning syntax *#{@updated_module_version}* of updated_module_version argument." unless SemanticPuppet::Version.valid?(@updated_module_version)
   end
 
   # Check with forge if a specified module exists
@@ -79,7 +76,7 @@ class DependencyChecker::Runner
 
       # Fetch module dependencies
 
-      dependencies = @use_local_files ? get_dependencies_from_metadata(module_path) : get_dependencies(module_name)
+      dependencies = @use_local_files ? get_dependencies_from_path(module_path) : get_dependencies(module_name)
 
       # Post warning if module_path is deprecated
       mod_deprecated = exists_on_forge ? @forge.check_module_deprecated(module_name) : false
@@ -127,29 +124,33 @@ class DependencyChecker::Runner
     message
   end
 
-  # Get dependencies of a supplied module and use the override values from @updated_module and @updated_module_version
-  # to verify if the depedencies are satisfied
-  # @param module_name [String]
+  # Get dependencies of a supplied module name to verify if the depedencies are satisfied
+  # @param module_name [String] name of module
   # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
   def get_dependencies(module_name)
     module_data = @forge.get_module_data(module_name)
-
     metadata = module_data.current_release.metadata
-    checker = DependencyChecker::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
-    checker.check_dependencies
+    get_dependencies_from_metadata(metadata)
   end
 
   # Get dependencies of a supplied module from a metadata.json file to verify if the depedencies are satisfied
-  # @param module_name [String]
+  # @param metadata_path [String] path to metadata.json
   # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
-  def get_dependencies_from_metadata(metadata_path)
+  def get_dependencies_from_path(metadata_path)
     metadata = JSON.parse(File.read(metadata_path), symbolize_names: true)
+    get_dependencies_from_metadata(metadata)
+  end
+
+  # Get dependencies of supplied module metadata. Takes module ovveride into account.
+  # @param metadata [Hash] module metadata
+  # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
+  def get_dependencies_from_metadata(metadata)
     checker = DependencyChecker::MetadataChecker.new(metadata, @forge, @updated_module, @updated_module_version)
     checker.check_dependencies
   end
 
   # Get dependencies of a supplied module from a metadata.json file to verify if the depedencies are satisfied
-  # @param module_name [String]
+  # @param metadata_path [String] path to metadata.json
   # @return [Map] a map of dependencies along with their constraint, current version and whether they satisfy the constraint
   def get_name_from_metadata(metadata_path)
     metadata = JSON.parse(File.read(metadata_path), symbolize_names: true)
@@ -158,42 +159,36 @@ class DependencyChecker::Runner
 
   # Retrieve the array of module names from the supplied filename/URL
   # @return [Array] an array of module names
-  def return_modules(managed_modules_path)
-    managed_modules = {}
-    managed_modules_yaml = {}
+  def return_modules(path)
+    begin
+      # We use Kernel#open because it can handle file or URI paths.
+      # This usage does not expose a security risk
+      contents = open(path).read # rubocop:disable Security/Open
+    rescue Errno::ENOENT, SocketError
+      raise "*Error:* Ensure *#{path}* is a valid file path or URL"
+    end
 
     begin
-      if managed_modules_path =~ URI::DEFAULT_PARSER.make_regexp
-        managed_modules = Net::HTTP.get(URI.parse(managed_modules_path))
-      elsif File.file?(managed_modules_path)
-        managed_modules = File.read(managed_modules_path)
+      if path.end_with? '.json'
+        modules = JSON.parse(contents)
       else
-        raise 'Error'
+        modules = YAML.safe_load(contents)
       end
     rescue StandardError
-      raise "*Error:* Ensure *#{managed_modules_path}* is a valid file path or URL"
+      raise "*Error:* Ensure syntax of #{path} file is valid YAML or JSON"
     end
 
-    begin
-      managed_modules_yaml = YAML.safe_load(managed_modules)
-    rescue StandardError
-      raise '*Error:* Ensure syntax of managed_modules file is a valid YAML array'
+    # transform from IAC supported module hash to simple list
+    if modules.is_a? Hash
+      modules = modules.map { |_key, val| val['puppet_module'] }.compact
     end
 
-    managed_modules_yaml
+    modules
   end
 
   # Post message to terminal
   # @param message [String]
   def post(message)
     puts message
-  end
-
-  def self.run_with_args(managed_modules_path, override, verbose)
-    new(managed_modules_path, override, verbose).run
-  end
-
-  def self.run(managed_modules_path)
-    new(managed_modules_path, nil, false, nil).run
   end
 end
