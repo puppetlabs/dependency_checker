@@ -83,3 +83,5 @@ Style/IfUnlessModifier:
   Enabled: false
 Style/SymbolProc:
   Enabled: false
+Style/OptionalBooleanParameter:
+  Enabled: false
