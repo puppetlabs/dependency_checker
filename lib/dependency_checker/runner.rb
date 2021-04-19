@@ -8,6 +8,8 @@ require 'parallel'
 
 # Main runner for DependencyChecker
 class DependencyChecker::Runner
+  attr_reader :problems
+
   def initialize(verbose = false)
     @forge   = DependencyChecker::ForgeHelper.new
     @verbose = verbose
@@ -44,6 +46,7 @@ class DependencyChecker::Runner
 
     # Post results of dependency checks
     message = run_dependency_checks
+    @problems = message.size
     message = 'All modules have valid dependencies.' if message.empty?
 
     post(message)

@@ -90,3 +90,5 @@ end
 
 runner.override = options[:override]
 runner.run
+
+exit(runner.problems.zero? ? 0 : 1)
