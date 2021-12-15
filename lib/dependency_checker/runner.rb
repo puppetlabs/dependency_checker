@@ -10,8 +10,8 @@ require 'parallel'
 class DependencyChecker::Runner
   attr_reader :problems
 
-  def initialize(verbose = false)
-    @forge   = DependencyChecker::ForgeHelper.new
+  def initialize(verbose = false, forge_hostname = nil, forge_token = nil)
+    @forge   = DependencyChecker::ForgeHelper.new({}, forge_hostname, forge_token)
     @verbose = verbose
   end
 

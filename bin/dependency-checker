@@ -43,6 +43,16 @@ OptionParser.new { |opts|
     options[:endorsement] = 'partner'
   end
 
+  opts.on('--ft forge_token', '--forge-token forge_token', 'The API token to authenticate the Forge connection with') do |forge_token|
+    options[:forge_token] = forge_token
+  end
+
+  opts.on('--fh forge_hostname', '--forge-hostname forge_hostname', 'Specify a specific Forge hostname to overwrite the default of https://forgeapi.puppet.com') do |forge_hostname|
+    raise 'Forge host must be specified in the format https://your-own-api.url/' unless forge_hostname.start_with? 'http'
+
+    options[:forge_hostname] = forge_hostname
+  end
+
   opts.on('-v', '--[no-]verbose', 'Run verbosely') do
     options[:verbose] = true
   end
@@ -72,7 +82,7 @@ end
 # Default :verbose to false
 options[:verbose] ||= false
 
-runner = DependencyChecker::Runner.new(options[:verbose])
+runner = DependencyChecker::Runner.new(options[:verbose], options[:forge_hostname], options[:forge_token])
 
 if options[:namespace]
   runner.resolve_from_namespace(options[:namespace], options[:endorsement])

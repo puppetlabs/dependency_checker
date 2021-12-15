@@ -5,8 +5,10 @@ require 'semantic_puppet'
 
 # Helper class for fetching data from the Forge and perform some basic operations
 class DependencyChecker::ForgeHelper
-  def initialize(cache = {})
+  def initialize(cache = {}, forge_hostname = nil, forge_token = nil)
     @cache = cache
+    PuppetForge.host = forge_hostname unless forge_hostname.nil?
+    PuppetForge::Connection.authorization = forge_token unless forge_token.nil?
   end
 
   # Retrieve current version of module
