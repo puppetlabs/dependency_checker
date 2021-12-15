@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'dependency_checker'
-  s.version     = '0.2.0'
+  s.version     = '0.3.0'
   s.executables << 'dependency-checker'
   s.licenses    = ['MIT']
   s.summary     = 'Check your Puppet metadata dependencies'
