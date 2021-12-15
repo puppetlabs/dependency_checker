@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org).
 
+## [0.3.0](https://github.com/puppetlabs/dependency_checker/tree/0.3.0) (2021-12-15)
+
+[Full Changelog](https://github.com/puppetlabs/dependency_checker/compare/0.2.0...0.3.0)
+
+### Changed
+
+- \(IAC-859\) Update to more modern ruby [\#21](https://github.com/puppetlabs/dependency_checker/pull/21) ([DavidS](https://github.com/DavidS))
+
+### Added
+
+- \(GH-30\) Add Forge hostname and auth token params [\#31](https://github.com/puppetlabs/dependency_checker/pull/31) ([sanfrancrisko](https://github.com/sanfrancrisko))
+- Report status with exit-code [\#25](https://github.com/puppetlabs/dependency_checker/pull/25) ([smortex](https://github.com/smortex))
+- Add the ability to validate modules in a namespace [\#22](https://github.com/puppetlabs/dependency_checker/pull/22) ([binford2k](https://github.com/binford2k))
+
+### Fixed
+
+- Update puppet\_forge requirement from ~\> 2.2 to \>= 2.2, \< 4.0 [\#23](https://github.com/puppetlabs/dependency_checker/pull/23) ([dependabot-preview[bot]](https://github.com/apps/dependabot-preview))
+
 ## [0.2.0](https://github.com/puppetlabs/dependency_checker/tree/0.2.0) (2019-03-22)
 
 [Full Changelog](https://github.com/puppetlabs/dependency_checker/compare/0.1.1...0.2.0)
