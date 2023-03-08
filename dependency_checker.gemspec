@@ -1,6 +1,10 @@
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'dependency_checker/version'
+
 Gem::Specification.new do |s|
   s.name        = 'dependency_checker'
-  s.version     = '0.3.0'
+  s.version     = DependencyChecker::VERSION
   s.executables << 'dependency-checker'
   s.licenses    = ['MIT']
   s.summary     = 'Check your Puppet metadata dependencies'
