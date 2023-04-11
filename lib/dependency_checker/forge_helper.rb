@@ -19,9 +19,7 @@ module DependencyChecker
       version = nil
       version = get_version(@cache[module_name]) if @cache.key?(module_name)
 
-      if !version && check_module_exists(module_name)
-        version = get_version(get_module_data(module_name))
-      end
+      version = get_version(get_module_data(module_name)) if !version && check_module_exists(module_name)
 
       version
     end
