@@ -167,9 +167,9 @@ module DependencyChecker
     # @return [Array] an array of module names
     def return_modules(path)
       begin
-        # We use Kernel#open because it can handle file or URI paths.
+        # We use URI#open because it can handle file or URI paths.
         # This usage does not expose a security risk
-        contents = open(path).read # rubocop:disable Security/Open
+        contents = URI.open(path).read # rubocop:disable Security/Open
       rescue Errno::ENOENT, SocketError
         raise "*Error:* Ensure *#{path}* is a valid file path or URL"
       end
