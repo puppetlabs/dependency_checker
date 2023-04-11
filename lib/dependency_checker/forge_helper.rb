@@ -67,7 +67,7 @@ module DependencyChecker
 
       raise "No modules found for #{namespace}." if modules.total.zero?
 
-      modules.unpaginated.map { |m| m.slug }
+      modules.unpaginated.map(&:slug)
     end
 
     private
