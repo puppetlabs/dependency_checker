@@ -183,7 +183,7 @@ class DependencyChecker::Runner
 
     # transform from IAC supported module hash to simple list
     if modules.is_a? Hash
-      modules = modules.map { |_key, val| val['puppet_module'] }.compact
+      modules = modules.filter_map { |_key, val| val['puppet_module'] }
     end
 
     modules
