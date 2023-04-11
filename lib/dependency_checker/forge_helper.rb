@@ -61,10 +61,10 @@ module DependencyChecker
     # @return [Array] list of modules
     def modules_in_namespace(namespace, endorsement = nil)
       modules = PuppetForge::Module.where(
-                  :owner => namespace, # rubocop:disable Layout/FirstArgumentIndentation
-                  :hide_deprecated => true,
-                  :module_groups => 'base pe_only',
-                  :endorsements => endorsement,
+                  owner: namespace, # rubocop:disable Layout/FirstArgumentIndentation
+                  hide_deprecated: true,
+                  module_groups: 'base pe_only',
+                  endorsements: endorsement,
                 )
 
       raise "No modules found for #{namespace}." if modules.total.zero?
