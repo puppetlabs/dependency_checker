@@ -173,11 +173,11 @@ module DependencyChecker
       end
 
       begin
-        if path.end_with? '.json'
-          modules = JSON.parse(contents)
-        else
-          modules = YAML.safe_load(contents)
-        end
+        modules = if path.end_with? '.json'
+                    JSON.parse(contents)
+                  else
+                    YAML.safe_load(contents)
+                  end
       rescue StandardError
         raise "*Error:* Ensure syntax of #{path} file is valid YAML or JSON"
       end
