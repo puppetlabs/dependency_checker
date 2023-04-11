@@ -13,7 +13,7 @@ describe 'forge_helper' do
     end
 
     it 'with invalid module name' do
-      expect(@forge_helper.get_current_version('puppetlabs-waffle')).to eq(nil)
+      expect(@forge_helper.get_current_version('puppetlabs-waffle')).to be_nil
     end
 
     it 'with slash in module name' do
@@ -24,22 +24,22 @@ describe 'forge_helper' do
   context 'get_module_data method' do
     it 'with valid module name' do
       response = @forge_helper.get_module_data('puppetlabs-strings')
-      expect(response).to_not eq(nil)
+      expect(response).not_to be_nil
     end
 
     it 'with invalid module name' do
       response = @forge_helper.get_module_data('puppetlabs-waffle')
-      expect(response).to eq(nil)
+      expect(response).to be_nil
     end
   end
 
   context 'check_module_exists method' do
     it 'with valid module name' do
-      expect(@forge_helper.check_module_exists('puppetlabs-strings')).to eq(true)
+      expect(@forge_helper.check_module_exists('puppetlabs-strings')).to be(true)
     end
 
     it 'with invalid module name' do
-      expect(@forge_helper.check_module_exists('puppetlabs-waffle')).to eq(false)
+      expect(@forge_helper.check_module_exists('puppetlabs-waffle')).to be(false)
     end
   end
 
