@@ -119,7 +119,7 @@ module DependencyChecker
 
         # If @verbose is true, always post message
         # If @verbose is false, only post if all dependencies don't match and/or if a dependency is deprecated
-        (all_match && !@verbose) ? '' : mod_message
+        all_match && !@verbose ? '' : mod_message
       end
 
       message = ''

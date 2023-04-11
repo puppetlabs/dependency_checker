@@ -18,7 +18,7 @@ module DependencyChecker
     def check_dependencies
       fetch_module_dependencies.map do |dependency, constraint|
         dependency = dependency.sub('-', '/')
-        current = (dependency == @updated_module) ? SemanticPuppet::Version.parse(@updated_module_version) : @forge.get_current_version(dependency)
+        current = dependency == @updated_module ? SemanticPuppet::Version.parse(@updated_module_version) : @forge.get_current_version(dependency)
         [dependency, constraint, current, constraint.include?(current)]
       end
     end
