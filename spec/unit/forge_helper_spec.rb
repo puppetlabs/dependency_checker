@@ -24,7 +24,7 @@ describe 'forge_helper' do
   context 'get_module_data method' do
     it 'with valid module name' do
       response = @forge_helper.get_module_data('puppetlabs-strings')
-      expect(response).to_not be_nil
+      expect(response).not_to be_nil
     end
 
     it 'with invalid module name' do
