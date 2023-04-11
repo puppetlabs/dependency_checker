@@ -6,7 +6,7 @@ require 'dependency_checker'
 require 'json'
 
 options = {}
-OptionParser.new { |opts|
+OptionParser.new do |opts|
   opts.on('-o module,version', '--override module,version', Array, 'Forge name of module and semantic version to override') do |override|
     options[:override] = override
   end
@@ -61,7 +61,7 @@ OptionParser.new { |opts|
     puts opts
     exit
   end
-}.parse!
+end.parse!
 
 # Raise error if both :override and :current_override are specified
 if options[:override] && options[:current_override]
