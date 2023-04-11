@@ -62,7 +62,7 @@ module DependencyChecker
                   owner: namespace, # rubocop:disable Layout/FirstArgumentIndentation
                   hide_deprecated: true,
                   module_groups: 'base pe_only',
-                  endorsements: endorsement,
+                  endorsements: endorsement
                 )
 
       raise "No modules found for #{namespace}." if modules.total.zero?
