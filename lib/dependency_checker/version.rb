@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module DependencyChecker
-  VERSION = '1.0.1.rc.1'
+  VERSION = '0.3.0'
 end
