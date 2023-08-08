@@ -31,7 +31,7 @@ module DependencyChecker
       module_data = @cache[module_name]
       begin
         @cache[module_name] = module_data = PuppetForge::Module.find(module_name) unless module_data
-      rescue
+      rescue StandardError
         return nil
       end
 
