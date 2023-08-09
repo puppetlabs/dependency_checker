@@ -19,12 +19,6 @@ OptionParser.new do |opts|
     options[:namespace] = namespace
   end
 
-  opts.on('-b bolt_project', '--bolt-project bolt_project', 'Check all modules within a bolt-project.yaml file.') do |bolt_project|
-    raise 'You must specify a valid bolt-project.yaml' unless File.exist?(bolt_project) || bolt_project.end_with?('.yaml')
-    
-    options[:bolt_project] = bolt_project
-  end
-
   opts.on('--endorsement endorsement', 'Filter a namespace search by endorsement (supported/approved/partner).') do |endorsement|
     raise 'You may only filter by one endorsement at a time' if options[:endorsement]
 
