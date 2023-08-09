@@ -8,7 +8,7 @@ require 'parallel'
 
 # Main runner for DependencyChecker
 module DependencyChecker
-  class Runner
+  class Runner # rubocop:disable Metrics/ClassLength
     attr_reader :problems
 
     def initialize(verbose = false, forge_hostname = nil, forge_token = nil)
@@ -184,10 +184,12 @@ module DependencyChecker
         raise "*Error:* Ensure syntax of #{path} file is valid YAML or JSON"
       end
 
-      # transform from IAC supported module hash to simple list
-      modules = modules.filter_map { |_key, val| val['puppet_module'] } if modules.is_a? Hash
-
-      modules
+      # transform from CAT supported module hash to simple list
+      if path.end_with? '/content-and-tooling-team/modules/list.json'
+        modules.filter_map { |key, _val| key['name'] } if modules.is_a? Array
+      elsif modules.is_a? Hash
+        modules.filter_map { |_key, val| val['puppet_module'] }
+      end
     end
 
     # Post message to terminal

@@ -86,8 +86,8 @@ if options[:namespace]
   runner.resolve_from_namespace(options[:namespace], options[:endorsement])
 
 elsif ARGV.empty?
-  puts "No module criteria specified. Defaulting to IAC supported modules.\n\n"
-  runner.resolve_from_path('https://puppetlabs.github.io/iac/modules.json')
+  puts "No module criteria specified. Defaulting to CAT supported modules.\n\n"
+  runner.resolve_from_path('https://puppetlabs.github.io/content-and-tooling-team/modules/list.json')
 
 elsif ARGV.map { |arg| File.basename arg } != ['metadata.json']
   runner.resolve_from_path(ARGV.first)
