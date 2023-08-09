@@ -50,7 +50,7 @@ Or you can supply an override value directly:
 
     $ dependency-checker ../*/metadata.json -o puppetlabs/stdlib,10.0.0
 
-The tool defaults to validating all modules supported by the Puppet IAC team if
+The tool defaults to validating all modules supported by the Puppet CAT team if
 no module specification arguments are provided.
 
 The following optional parameters are available:
