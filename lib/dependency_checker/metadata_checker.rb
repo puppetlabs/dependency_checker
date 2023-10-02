@@ -4,6 +4,20 @@ require 'semantic_puppet'
 
 # Checks dependencies of passed in metadata and performs checks to verify constraints
 module DependencyChecker
+  # Class for checking metadata in the dependency checker.
+  #
+  # The MetadataChecker class is responsible for performing checks on metadata
+  # files in the context of the dependency checker. It includes methods for
+  # verifying metadata information such as module name, version, and dependencies.
+  #
+  # Example usage:
+  #
+  #   checker = DependencyChecker::MetadataChecker.new
+  #   result = checker.check_metadata(metadata_hash)
+  #   puts result.message if result.failed?
+  #
+  # @author Ewoud Kohl van Wijngaarden <ewoud@kohlvanwijngaarden.nl>
+  # @since 1.0.0
   class MetadataChecker
     def initialize(metadata, forge, updated_module, updated_module_version)
       @metadata = metadata
