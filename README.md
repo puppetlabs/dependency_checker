@@ -3,7 +3,7 @@
 The dependency-checker tool validates dependencies in Puppet modules against the
 latest published versions on the [Puppet Forge](https://forge.puppet.com/). This
 means that it will ensure that a module supports the latest version of all the
-dependencies it declares.
+dependencies it declares. test
 
 ## Installation
 
