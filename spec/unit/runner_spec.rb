@@ -3,7 +3,8 @@
 require 'dependency_checker'
 
 describe 'compare_dependencies' do
-  managed_modules_file = File.join(File.expand_path(File.dirname(File.dirname(__FILE__))), 'fixtures/managed_modules.yaml')
+  managed_modules_file = File.join(File.expand_path(File.dirname(File.dirname(__FILE__))),
+                                   'fixtures/managed_modules.yaml')
   managed_modules_url = 'https://raw.githubusercontent.com/puppetlabs/dependency_checker/main/spec/fixtures/managed_modules.yaml'
   # module_name = 'puppetlabs-stdlib'
   # version = '10.0.0'

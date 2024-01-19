@@ -45,7 +45,8 @@ describe 'forge_helper' do
 
   context 'get_version' do
     it 'with valid module name' do
-      expect(@forge_helper.send(:get_version, @forge_helper.get_module_data('puppetlabs-strings'))).to match SemanticPuppet::Version.parse('999.999.999')
+      expect(@forge_helper.send(:get_version,
+                                @forge_helper.get_module_data('puppetlabs-strings'))).to match SemanticPuppet::Version.parse('999.999.999')
     end
   end
 end

@@ -7,19 +7,23 @@ require 'json'
 
 options = {}
 OptionParser.new do |opts|
-  opts.on('-o module,version', '--override module,version', Array, 'Forge name of module and semantic version to override') do |override|
+  opts.on('-o module,version', '--override module,version', Array,
+          'Forge name of module and semantic version to override') do |override|
     options[:override] = override
   end
 
-  opts.on('-c', '--current', 'Extract override version from metadata.json inside current working directory') do |current_override|
+  opts.on('-c', '--current',
+          'Extract override version from metadata.json inside current working directory') do |current_override|
     options[:current_override] = current_override
   end
 
-  opts.on('-n', '--namespace namespace', 'Check all modules in a given namespace (filter with endorsements).') do |namespace|
+  opts.on('-n', '--namespace namespace',
+          'Check all modules in a given namespace (filter with endorsements).') do |namespace|
     options[:namespace] = namespace
   end
 
-  opts.on('--endorsement endorsement', 'Filter a namespace search by endorsement (supported/approved/partner).') do |endorsement|
+  opts.on('--endorsement endorsement',
+          'Filter a namespace search by endorsement (supported/approved/partner).') do |endorsement|
     raise 'You may only filter by one endorsement at a time' if options[:endorsement]
 
     options[:endorsement] = endorsement
@@ -43,11 +47,13 @@ OptionParser.new do |opts|
     options[:endorsement] = 'partner'
   end
 
-  opts.on('--ft forge_token', '--forge-token forge_token', 'The API token to authenticate the Forge connection with') do |forge_token|
+  opts.on('--ft forge_token', '--forge-token forge_token',
+          'The API token to authenticate the Forge connection with') do |forge_token|
     options[:forge_token] = forge_token
   end
 
-  opts.on('--fh forge_hostname', '--forge-hostname forge_hostname', 'Specify a specific Forge hostname to overwrite the default of https://forgeapi.puppet.com') do |forge_hostname|
+  opts.on('--fh forge_hostname', '--forge-hostname forge_hostname',
+          'Specify a specific Forge hostname to overwrite the default of https://forgeapi.puppet.com') do |forge_hostname|
     raise 'Forge host must be specified in the format https://your-own-api.url/' unless forge_hostname.start_with? 'http'
 
     options[:forge_hostname] = forge_hostname
@@ -64,7 +70,10 @@ OptionParser.new do |opts|
 end.parse!
 
 # Raise error if both :override and :current_override are specified
-raise OptionParser::InvalidOption, 'You can not select both override and current override options' if options[:override] && options[:current_override]
+if options[:override] && options[:current_override]
+  raise OptionParser::InvalidOption,
+        'You can not select both override and current override options'
+end
 
 # If :current_override is specified, retrieve name and version of module in current working directory
 if options[:current_override]
@@ -74,7 +83,10 @@ if options[:current_override]
 
   override_check = metadata_json.is_a?(Hash) && !metadata_json.empty?
   options[:override] = [module_name, module_version] if override_check
-  raise OptionParser::InvalidOption, 'Unable to find local metadata.json in current working directory' unless override_check
+  unless override_check
+    raise OptionParser::InvalidOption,
+          'Unable to find local metadata.json in current working directory'
+  end
 end
 
 # Default :verbose to false

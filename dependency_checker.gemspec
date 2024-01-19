@@ -21,7 +21,8 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.md']
   s.homepage    = 'https://github.com/puppetlabs/dependency_checker'
   s.metadata    = {
-    'source_code_uri' => 'https://github.com/puppetlabs/dependency_checker'
+    'source_code_uri' => 'https://github.com/puppetlabs/dependency_checker',
+    'rubygems_mfa_required' => 'true'
   }
   s.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
 
