@@ -35,13 +35,17 @@ module DependencyChecker
       @updated_module, @updated_module_version = override
 
       raise '*Error:* Pass an override in the form `--override module,version`' unless override.size == 2
-      raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid." unless check_module_exists(@updated_module)
+      unless check_module_exists(@updated_module)
+        raise "*Error:* Could not find *#{@updated_module}* on Puppet Forge! Ensure updated_module argument is valid."
+      end
       unless SemanticPuppet::Version.valid?(@updated_module_version)
         raise "*Error:* Verify semantic versioning syntax *#{@updated_module_version}* of updated_module_version argument."
       end
 
       puts "Overriding *#{@updated_module}* version with *#{@updated_module_version}*\n\n"
-      puts "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n" if @forge.check_module_deprecated(@updated_module)
+      return unless @forge.check_module_deprecated(@updated_module)
+
+      puts "The module you are comparing against *#{@updated_module}* is *deprecated*.\n\n"
     end
 
     def run
