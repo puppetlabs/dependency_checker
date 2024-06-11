@@ -15,6 +15,4 @@ group :test do
   gem 'rubocop', '~> 1.64.0', require: false
   gem 'rubocop-performance', '~> 1.16', require: false
   gem 'rubocop-rspec', '~> 3.0', require: false
-  gem 'rubocop-factory_bot', '!= 2.26.0', require: false
-  gem 'rubocop-rspec_rails', '!= 2.29.0', require: false
 end
