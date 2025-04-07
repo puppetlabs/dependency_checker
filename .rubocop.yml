@@ -13,5 +13,4 @@ AllCops:
     - vendor/bundle/**/*
   NewCops: enable
   SuggestExtensions: false
-  TargetRubyVersion: '2.7'
-
+  TargetRubyVersion: '3.1'

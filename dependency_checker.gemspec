@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
     'source_code_uri' => 'https://github.com/puppetlabs/dependency_checker',
     'rubygems_mfa_required' => 'true'
   }
-  s.required_ruby_version = Gem::Requirement.new('>= 2.7.0')
+  s.required_ruby_version = Gem::Requirement.new('>= 3.1.0')
 
   s.add_runtime_dependency 'parallel'
   s.add_runtime_dependency 'puppet_forge', '>= 2.2', '< 6.0'
