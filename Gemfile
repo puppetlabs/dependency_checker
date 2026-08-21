@@ -12,6 +12,7 @@ group :development do
 end
 
 group :test do
+  gem 'benchmark'
   gem 'simplecov', require: false
   gem 'simplecov-console', require: false
   gem 'rspec', '~> 3.0', require: false
