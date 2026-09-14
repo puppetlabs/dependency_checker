@@ -15,8 +15,8 @@ describe 'dependency_checker' do
     it 'returns correct results' do
       expect(@checker.check_dependencies).to eq(
         [
-          ['puppetlabs/registry', SemanticPuppet::VersionRange.parse('>=1.0.0 <6.0.0'),
-           SemanticPuppet::Version.parse('5.0.3'), true],
+          ['puppetlabs/registry', SemanticPuppet::VersionRange.parse('>=1.0.0 <7.0.0'),
+           SemanticPuppet::Version.parse('6.0.0'), true],
           ['puppetlabs/stdlib', SemanticPuppet::VersionRange.parse('>=2.1.0 <11.0.0'),
            SemanticPuppet::Version.parse('9.3.0'), true]
         ]
